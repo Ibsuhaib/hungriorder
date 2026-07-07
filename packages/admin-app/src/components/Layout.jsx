@@ -38,7 +38,7 @@ export default function Layout({ children }) {
   const footer = (
     <div className="border-t border-white/10 p-3">
       <a
-        href={`${window.location.protocol}//${window.location.host.replace('admin.', '')}/r/${restaurant?.slug}`}
+        href={`${import.meta.env.VITE_STOREFRONT_URL || `${window.location.protocol}//${window.location.host.replace('admin.', '')}`}/r/${restaurant?.slug}`}
         target="_blank"
         rel="noreferrer"
         className="mb-1 flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-slate-400 hover:bg-white/10"

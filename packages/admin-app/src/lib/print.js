@@ -63,7 +63,7 @@ export function printReceipt(order, restaurant) {
   const items = (order.order_items ?? [])
     .map(
       (i) =>
-        `<tr><td class="qty">${i.quantity}×</td><td>${esc(i.item_name)}</td><td class="amt">${rupees(i.line_total)}</td></tr>`
+        `<tr><td class="qty">${i.quantity}×</td><td>${esc(i.item_name)}</td><td class="amt">${rupees(i.quantity * i.unit_price)}</td></tr>`
     )
     .join('');
   const addr = order.delivery_address;
@@ -80,11 +80,9 @@ export function printReceipt(order, restaurant) {
     <hr>
     <table>${items}</table>
     <hr>
-    <div class="row"><span>Subtotal</span><span>${rupees(order.subtotal)}</span></div>
-    ${Number(order.discount) > 0 ? `<div class="row"><span>Discount</span><span>-${rupees(order.discount)}</span></div>` : ''}
+    <div class="row"><span>Subtotal (incl. taxes)</span><span>${rupees(Number(order.total_amount) - (Number(order.delivery_fee) || 0))}</span></div>
     ${Number(order.delivery_fee) > 0 ? `<div class="row"><span>Delivery fee</span><span>${rupees(order.delivery_fee)}</span></div>` : ''}
-    <div class="row bold lg"><span>TOTAL</span><span>${rupees(order.total)}</span></div>
-    <p>Incl. GST ${rupees(order.tax)}</p>
+    <div class="row bold lg"><span>TOTAL</span><span>${rupees(order.total_amount)}</span></div>
     ${order.notes ? `<hr><p>Note: ${esc(order.notes)}</p>` : ''}
     <hr>
     <p class="center">Thank you! Order again at</p>

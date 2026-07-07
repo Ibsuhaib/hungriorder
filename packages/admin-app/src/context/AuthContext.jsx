@@ -30,7 +30,14 @@ export function AuthProvider({ children }) {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+      // Unified project: admins are linked to their restaurant via
+      // restaurant_admins (same table the main hungriAR admin panel uses).
+      const { data: p } = await supabase
+        .from('restaurant_admins')
+        .select('id, restaurant_id, user_id')
+        .eq('user_id', session.user.id)
+        .limit(1)
+        .maybeSingle();
       if (cancelled) return;
       setProfile(p ?? null);
       if (p) {
@@ -53,6 +60,9 @@ export function AuthProvider({ children }) {
       restaurant,
       loading,
       expired: Boolean(expired) || restaurant?.is_active === false,
+      // Restaurants with the full hungriAR POS manage online orders from the
+      // main admin panel instead of this lightweight app.
+      hasHungriar: restaurant ? restaurant.has_hungriar !== false : false,
       setRestaurant,
       signOut: () => supabase.auth.signOut(),
     };

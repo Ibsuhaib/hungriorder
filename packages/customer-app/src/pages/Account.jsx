@@ -32,7 +32,7 @@ export default function Account() {
     if (!session?.user) return;
     supabase
       .from('orders')
-      .select('*, restaurants(name, slug), order_items(menu_item_id, item_name, item_price, quantity, menu_items(id, name, price, is_veg, image_url, is_available))')
+      .select('*, restaurants(name, slug), order_items(menu_item_id, item_name, unit_price, quantity, menu_items(id, name, price, is_veg, image_url, available))')
       .eq('customer_id', session.user.id)
       .order('created_at', { ascending: false })
       .limit(20)
@@ -59,7 +59,7 @@ export default function Account() {
   const reorder = (order) => {
     const restaurant = { id: order.restaurant_id, slug: order.restaurants?.slug, name: order.restaurants?.name };
     const items = (order.order_items ?? [])
-      .filter((oi) => oi.menu_items?.is_available)
+      .filter((oi) => oi.menu_items?.available)
       .map((oi) => ({
         id: oi.menu_items.id,
         name: oi.menu_items.name,
@@ -165,7 +165,7 @@ export default function Account() {
                         {(o.order_items ?? []).map((i) => `${i.item_name} ×${i.quantity}`).join(', ')}
                       </p>
                       <p className="mt-1 text-xs text-slate-400">
-                        {timeAgo(o.created_at)} · {rupees(o.total)}
+                        {timeAgo(o.created_at)} · {rupees(o.total_amount)}
                       </p>
                     </div>
                     <span

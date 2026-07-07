@@ -24,6 +24,7 @@ export default function Orders() {
       .from('orders')
       .select('*, order_items(*)')
       .eq('restaurant_id', restaurant.id)
+      .in('order_type', ['delivery', 'takeaway'])
       .order('created_at', { ascending: false })
       .limit(100);
     setOrders(data ?? []);

@@ -62,7 +62,7 @@ export default function OrderCard({ order, restaurant, onStatusChange }) {
             {timeAgo(order.created_at)} · {order.payment_method?.toUpperCase()}
           </p>
         </div>
-        <p className="text-lg font-bold">{rupees(order.total)}</p>
+        <p className="text-lg font-bold">{rupees(order.total_amount)}</p>
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -89,7 +89,7 @@ export default function OrderCard({ order, restaurant, onStatusChange }) {
               <span>
                 <span className="font-semibold">{i.quantity}×</span> {i.item_name}
               </span>
-              <span>{rupees(i.line_total)}</span>
+              <span>{rupees(i.quantity * i.unit_price)}</span>
             </li>
           ))}
         </ul>

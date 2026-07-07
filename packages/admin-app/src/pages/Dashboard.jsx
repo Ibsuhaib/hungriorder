@@ -21,18 +21,21 @@ export default function Dashboard() {
       const [{ data: today }, { count: pendingCount }, { data: recentOrders }] = await Promise.all([
         supabase
           .from('orders')
-          .select('total, status')
+          .select('total_amount, status')
           .eq('restaurant_id', restaurant.id)
+          .in('order_type', ['delivery', 'takeaway'])
           .gte('created_at', startOfDay.toISOString()),
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
           .eq('restaurant_id', restaurant.id)
+          .in('order_type', ['delivery', 'takeaway'])
           .eq('status', 'pending'),
         supabase
           .from('orders')
-          .select('id, status, total, customer_name, created_at, order_type')
+          .select('id, status, total_amount, customer_name, created_at, order_type')
           .eq('restaurant_id', restaurant.id)
+          .in('order_type', ['delivery', 'takeaway'])
           .order('created_at', { ascending: false })
           .limit(8),
       ]);
@@ -40,7 +43,7 @@ export default function Dashboard() {
       const valid = (today ?? []).filter((o) => o.status !== 'cancelled');
       setStats({
         todayOrders: valid.length,
-        todayRevenue: valid.reduce((s, o) => s + Number(o.total), 0),
+        todayRevenue: valid.reduce((s, o) => s + Number(o.total_amount), 0),
         pending: pendingCount ?? 0,
       });
       setRecent(recentOrders ?? []);
@@ -99,7 +102,7 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <StatusBadge status={o.status} />
-                <span className="w-20 text-right text-sm font-bold">{rupees(o.total)}</span>
+                <span className="w-20 text-right text-sm font-bold">{rupees(o.total_amount)}</span>
               </li>
             ))}
           </ul>

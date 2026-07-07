@@ -37,10 +37,10 @@ export default function Checkout() {
       .select('*')
       .eq('slug', slug)
       .eq('is_active', true)
+      .eq('delivery_enabled', true)
       .maybeSingle()
       .then(({ data }) => {
         setRestaurant(data);
-        if (data && !data.delivery_enabled) setOrderType('takeaway');
       });
   }, [slug]);
 
@@ -81,7 +81,7 @@ export default function Checkout() {
     if (belowMin) return setError(`Minimum order for delivery is ${rupees(minOrder)}.`);
     setSubmitting(true);
     try {
-      const result = await callFunction('place-order', {
+      const result = await callFunction('place-online-order', {
         restaurant_id: restaurant.id,
         items: cart.items.map((i) => ({ menu_item_id: i.id, quantity: i.qty })),
         order_type: orderType,

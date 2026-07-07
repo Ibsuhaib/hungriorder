@@ -29,13 +29,14 @@ export default function Restaurant() {
         .select('*')
         .eq('slug', slug)
         .eq('is_active', true)
+        .eq('delivery_enabled', true) // storefront is live only when online ordering is enabled
         .maybeSingle();
       if (cancelled) return;
       if (error) return setState('error');
       if (!r) return setState('notfound');
       const [{ data: cats }, { data: menu }] = await Promise.all([
-        supabase.from('menu_categories').select('*').eq('restaurant_id', r.id).order('display_order'),
-        supabase.from('menu_items').select('*').eq('restaurant_id', r.id).eq('is_available', true).order('name'),
+        supabase.from('categories').select('*').eq('restaurant_id', r.id).order('display_order'),
+        supabase.from('menu_items').select('*').eq('restaurant_id', r.id).eq('available', true).order('name'),
       ]);
       if (cancelled) return;
       setRestaurant(r);

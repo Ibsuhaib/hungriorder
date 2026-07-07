@@ -54,9 +54,10 @@ export default function Settings() {
     setBusy(true);
     setMessage(null);
     try {
+      // slug is intentionally NOT updatable here — it is managed by the
+      // platform team (the protect_subscription_fields trigger reverts it).
       const update = {
         name: form.name.trim(),
-        slug: form.slug.trim().toLowerCase(),
         description: form.description.trim() || null,
         cuisine_tags: form.cuisine_tags.split(',').map((t) => t.trim().toLowerCase().replaceAll(' ', '-')).filter(Boolean),
         address: form.address.trim() || null,
@@ -127,16 +128,19 @@ export default function Settings() {
             <input value={form.name} onChange={(e) => set('name', e.target.value)} className="input mt-1" required maxLength={120} />
           </label>
           <label className="block text-xs font-medium text-slate-500">
-            Storefront URL slug *
-            <div className="mt-1 flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white focus-within:border-gold">
-              <span className="bg-slate-50 px-3 py-2.5 text-xs text-slate-400">/r/</span>
+            Storefront URL slug
+            <div className="mt-1 flex items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+              <span className="bg-slate-100 px-3 py-2.5 text-xs text-slate-400">/r/</span>
               <input
                 value={form.slug}
-                onChange={(e) => set('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none"
-                required
+                readOnly
+                disabled
+                className="min-w-0 flex-1 bg-slate-50 px-3 py-2.5 text-sm text-slate-500 outline-none"
               />
             </div>
+            <span className="mt-1 block text-[11px] text-slate-400">
+              Contact support to change your storefront URL.
+            </span>
           </label>
           <label className="block text-xs font-medium text-slate-500">
             Description

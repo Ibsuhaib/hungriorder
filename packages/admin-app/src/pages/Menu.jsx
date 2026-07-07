@@ -17,7 +17,7 @@ async function uploadImage(restaurantId, file) {
   return supabase.storage.from('menu-images').getPublicUrl(path).data.publicUrl;
 }
 
-const EMPTY_ITEM = { name: '', description: '', price: '', is_veg: true, is_available: true, image_url: null };
+const EMPTY_ITEM = { name: '', description: '', price: '', is_veg: true, available: true, image_url: null };
 
 export default function Menu() {
   const { restaurant } = useAuth();
@@ -30,7 +30,7 @@ export default function Menu() {
 
   const load = async () => {
     const [{ data: cats }, { data: menu }] = await Promise.all([
-      supabase.from('menu_categories').select('*').eq('restaurant_id', restaurant.id).order('display_order'),
+      supabase.from('categories').select('*').eq('restaurant_id', restaurant.id).order('display_order'),
       supabase.from('menu_items').select('*').eq('restaurant_id', restaurant.id).order('name'),
     ]);
     setCategories(cats ?? []);
@@ -58,8 +58,8 @@ export default function Menu() {
     setBusy(true);
     setError('');
     const result = catModal.id
-      ? await supabase.from('menu_categories').update({ name }).eq('id', catModal.id)
-      : await supabase.from('menu_categories').insert({
+      ? await supabase.from('categories').update({ name }).eq('id', catModal.id)
+      : await supabase.from('categories').insert({
           restaurant_id: restaurant.id,
           name,
           display_order: (categories?.length ?? 0) + 1,
@@ -73,7 +73,7 @@ export default function Menu() {
   const deleteCategory = async (cat) => {
     const count = itemsByCategory.get(cat.id)?.length ?? 0;
     if (!window.confirm(`Delete "${cat.name}"${count ? ` and its ${count} item(s)` : ''}?`)) return;
-    await supabase.from('menu_categories').delete().eq('id', cat.id);
+    await supabase.from('categories').delete().eq('id', cat.id);
     load();
   };
 
@@ -84,7 +84,7 @@ export default function Menu() {
     [next[idx], next[target]] = [next[target], next[idx]];
     setCategories(next);
     await Promise.all(
-      next.map((c, i) => supabase.from('menu_categories').update({ display_order: i + 1 }).eq('id', c.id))
+      next.map((c, i) => supabase.from('categories').update({ display_order: i + 1 }).eq('id', c.id))
     );
   };
 
@@ -105,7 +105,7 @@ export default function Menu() {
         description: itemModal.description.trim() || null,
         price,
         is_veg: itemModal.is_veg,
-        is_available: itemModal.is_available,
+        available: itemModal.available,
         image_url: imageUrl,
       };
       const result = itemModal.id
@@ -132,8 +132,8 @@ export default function Menu() {
   };
 
   const toggleAvailability = async (item) => {
-    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_available: !i.is_available } : i)));
-    await supabase.from('menu_items').update({ is_available: !item.is_available }).eq('id', item.id);
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, available: !i.available } : i)));
+    await supabase.from('menu_items').update({ available: !item.available }).eq('id', item.id);
   };
 
   if (categories === null) return <div className="flex justify-center pt-20"><Spinner /></div>;
@@ -195,7 +195,7 @@ export default function Menu() {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm font-medium ${item.is_available ? '' : 'text-slate-400 line-through'}`}>
+                      <p className={`truncate text-sm font-medium ${item.available ? '' : 'text-slate-400 line-through'}`}>
                         {item.name}
                       </p>
                       <p className="text-xs text-slate-500">
@@ -205,7 +205,7 @@ export default function Menu() {
                     <label className="flex cursor-pointer items-center gap-1.5 text-xs text-slate-500">
                       <input
                         type="checkbox"
-                        checked={item.is_available}
+                        checked={item.available}
                         onChange={() => toggleAvailability(item)}
                         className="h-4 w-4 accent-[#D4A373]"
                       />
@@ -302,8 +302,8 @@ export default function Menu() {
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={itemModal.is_available}
-                  onChange={(e) => setItemModal({ ...itemModal, is_available: e.target.checked })}
+                  checked={itemModal.available}
+                  onChange={(e) => setItemModal({ ...itemModal, available: e.target.checked })}
                   className="h-4 w-4 accent-[#D4A373]"
                 />
                 Available
