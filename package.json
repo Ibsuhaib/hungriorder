@@ -1,0 +1,16 @@
+{
+  "name": "hungriorder",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:customer": "npm run dev -w customer-app",
+    "dev:admin": "npm run dev -w admin-app",
+    "build": "npm run build -w customer-app && npm run build -w admin-app",
+    "build:customer": "npm run build -w customer-app",
+    "build:admin": "npm run build -w admin-app",
+    "icons": "node scripts/gen-icons.mjs"
+  }
+}
