@@ -7,6 +7,11 @@ if (!url || !anonKey) {
   console.warn('Supabase env vars missing — copy .env.example to .env and fill them in.');
 }
 
+// False when the build is missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY —
+// pages use this to show a clear "not configured" message instead of
+// mysterious failed requests to localhost.
+export const isConfigured = Boolean(url && anonKey);
+
 export const supabase = createClient(url ?? 'http://localhost:54321', anonKey ?? 'anon', {
   auth: { persistSession: true, autoRefreshToken: true },
 });

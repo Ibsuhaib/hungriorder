@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { UtensilsCrossed } from 'lucide-react';
-import { supabase } from '../lib/supabase.js';
+import { UtensilsCrossed, ShoppingBag } from 'lucide-react';
+import { supabase, isConfigured } from '../lib/supabase.js';
+
+const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL || 'https://hungriorder.com';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,13 +19,28 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!isConfigured) {
+      return setError(
+        'This deployment is missing its Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the hosting environment (Vercel → Settings → Environment Variables) and redeploy.'
+      );
+    }
     setBusy(true);
     const { error: err } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
     setBusy(false);
-    if (err) return setError('Invalid email or password.');
+    if (err) {
+      // Only wrong credentials get the friendly message — every other failure
+      // (network, config, CORS) shows its real cause so it can be fixed.
+      if (err.message?.toLowerCase().includes('invalid login credentials')) {
+        return setError('Invalid email or password.');
+      }
+      if (err.message?.toLowerCase().includes('failed to fetch')) {
+        return setError('Could not reach the server. Check your connection — or, if this is a fresh deployment, its Supabase environment variables.');
+      }
+      return setError(err.message || 'Sign-in failed. Please try again.');
+    }
     navigate('/', { replace: true });
   };
 
@@ -72,6 +89,12 @@ export default function Login() {
         <p className="mt-4 text-center text-xs text-slate-400">
           New to hungriOrder? Contact support to get your restaurant onboarded.
         </p>
+        <a
+          href={STOREFRONT_URL}
+          className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs font-medium text-navy underline underline-offset-2"
+        >
+          <ShoppingBag className="h-3.5 w-3.5" /> Looking to order food? Go to hungriOrder
+        </a>
       </motion.div>
     </div>
   );
