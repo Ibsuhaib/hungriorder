@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { UtensilsCrossed, Smartphone, MapPin, LocateFixed, Check } from 'lucide-react';
-import { detectLocation, saveProfile } from '../lib/geo.js';
+import { UtensilsCrossed, Smartphone, MapPin, LocateFixed, Check, Search } from 'lucide-react';
+import { detectLocation, reverseGeocode, saveProfile, LOCATION_ERROR_MESSAGES } from '../lib/geo.js';
+import LocationSheet from './LocationSheet.jsx';
 
 /**
  * First-visit gate (Swiggy/Zomato style): asks for the customer's mobile
- * number and detects their location so the landing page can show the nearest
- * restaurants. Location is requested but optional — denying it just disables
- * nearest-first sorting.
+ * number and their location — auto-detected via GPS, or searched manually if
+ * detection is blocked/unavailable. Location is optional; denying it just
+ * disables nearest-first sorting.
  */
 export default function EntryGate({ onDone }) {
   const [phone, setPhone] = useState('');
   const [location, setLocation] = useState(null);
-  const [locState, setLocState] = useState('idle'); // idle | asking | ok | denied
+  const [locState, setLocState] = useState('idle'); // idle | asking | ok | failed
+  const [locError, setLocError] = useState('');
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [error, setError] = useState('');
 
   const cleanPhone = phone.replace(/\D/g, '').slice(0, 10);
@@ -20,12 +23,15 @@ export default function EntryGate({ onDone }) {
 
   const askLocation = async () => {
     setLocState('asking');
+    setLocError('');
     try {
       const loc = await detectLocation();
-      setLocation(loc);
+      const place = await reverseGeocode(loc.lat, loc.lng);
+      setLocation({ ...loc, ...place });
       setLocState('ok');
-    } catch {
-      setLocState('denied');
+    } catch (err) {
+      setLocState('failed');
+      setLocError(LOCATION_ERROR_MESSAGES[err.code] ?? 'Could not detect your location.');
     }
   };
 
@@ -37,7 +43,7 @@ export default function EntryGate({ onDone }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-navy">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-navy">
       <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-2 text-lg font-bold text-white">
@@ -78,6 +84,7 @@ export default function EntryGate({ onDone }) {
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-300">
                 <MapPin className="h-3.5 w-3.5 text-gold" /> Your location
               </label>
+
               <button
                 type="button"
                 onClick={askLocation}
@@ -91,17 +98,24 @@ export default function EntryGate({ onDone }) {
                 {locState === 'asking' ? (
                   <><span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-white" /> Detecting…</>
                 ) : locState === 'ok' ? (
-                  <><Check className="h-4 w-4" /> Location detected</>
+                  <><Check className="h-4 w-4 shrink-0" /> <span className="truncate">{location?.label || 'Location detected'}</span></>
                 ) : (
                   <><LocateFixed className="h-4 w-4" /> Use my current location</>
                 )}
               </button>
-              {locState === 'denied' && (
-                <p className="mt-1.5 text-xs text-amber-400">
-                  Location was blocked — you can still browse, but we can't sort by nearest. Allow
-                  location in your browser settings and tap again.
-                </p>
+
+              {locState === 'failed' && locError && (
+                <p className="mt-1.5 text-xs leading-relaxed text-amber-400">{locError}</p>
               )}
+
+              <button
+                type="button"
+                onClick={() => setSheetOpen(true)}
+                className="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-medium text-slate-400 underline underline-offset-4 hover:text-gold"
+              >
+                <Search className="h-3 w-3" />
+                {locState === 'ok' ? 'Deliver somewhere else? Search your area' : 'Or search your area manually'}
+              </button>
             </div>
 
             {error && (
@@ -124,6 +138,12 @@ export default function EntryGate({ onDone }) {
           </p>
         </motion.div>
       </div>
+
+      <LocationSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        onSelect={(loc) => { setLocation(loc); setLocState('ok'); setLocError(''); }}
+      />
     </div>
   );
 }

@@ -23,10 +23,17 @@ export default function Checkout() {
 
   const [restaurant, setRestaurant] = useState(null);
   const [orderType, setOrderType] = useState('delivery');
-  // Prefill from the entry-gate profile (the number entered on the landing page)
-  const [phone, setPhone] = useState(() => loadProfile()?.phone ?? '');
+  // Prefill from the entry-gate profile: the number entered on the landing
+  // page, and the area/city/pincode of the chosen delivery location.
+  const [profile] = useState(() => loadProfile());
+  const [phone, setPhone] = useState(profile?.phone ?? '');
   const [name, setName] = useState('');
-  const [address, setAddress] = useState({ line1: '', line2: '', city: '', pincode: '' });
+  const [address, setAddress] = useState({
+    line1: '',
+    line2: profile?.location?.area ?? '',
+    city: profile?.location?.city ?? '',
+    pincode: profile?.location?.pincode ?? '',
+  });
   const [savedIdx, setSavedIdx] = useState(-1);
   const [payment, setPayment] = useState('cash');
   const [notes, setNotes] = useState('');
@@ -183,6 +190,12 @@ export default function Checkout() {
                 <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold">
                   <MapPin className="h-4 w-4 text-gold" /> Delivery address
                 </h2>
+                {profile?.location?.label && (
+                  <p className="mb-3 rounded-xl bg-gold-light px-3 py-2 text-xs text-navy">
+                    📍 Delivering near <span className="font-semibold">{profile.location.label}</span> — add
+                    your house/flat details below.
+                  </p>
+                )}
                 {savedAddresses.length > 0 && (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {savedAddresses.map((a, i) => (

@@ -8,8 +8,10 @@ import {
 import { supabase, isConfigured } from '../lib/supabase.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { rupees, isOpenNow } from '../lib/format.js';
-import { loadProfile, saveProfile, detectLocation, withDistance, formatKm } from '../lib/geo.js';
+import { loadProfile, saveProfile, withDistance, formatKm, formatCoords } from '../lib/geo.js';
 import EntryGate from '../components/EntryGate.jsx';
+import LocationSheet from '../components/LocationSheet.jsx';
+import { LocationMap } from '../components/ui/expand-map.jsx';
 import VegBadge from '../components/VegBadge.jsx';
 import Spinner from '../components/Spinner.jsx';
 
@@ -155,7 +157,7 @@ export default function Landing() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('dishes'); // dishes | restaurants
-  const [relocating, setRelocating] = useState(false);
+  const [locSheetOpen, setLocSheetOpen] = useState(false);
 
   const hasEntered = Boolean(profile?.phone);
   const userLoc = profile?.location ?? null;
@@ -197,17 +199,7 @@ export default function Landing() {
     };
   }, [hasEntered]);
 
-  const relocate = async () => {
-    setRelocating(true);
-    try {
-      const loc = await detectLocation();
-      setProfile(saveProfile({ location: loc }));
-    } catch {
-      /* denied — keep whatever we had */
-    } finally {
-      setRelocating(false);
-    }
-  };
+  const changeLocation = (loc) => setProfile(saveProfile({ location: loc }));
 
   // Distance-annotated, radius-filtered, nearest-first
   const nearbyRestaurants = useMemo(() => {
@@ -269,17 +261,14 @@ export default function Landing() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={relocate}
-              disabled={relocating}
-              title={userLoc ? 'Update my location' : 'Detect my location'}
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${
+              onClick={() => setLocSheetOpen(true)}
+              title="Change delivery location"
+              className={`flex min-w-0 max-w-[45vw] items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs sm:max-w-[240px] ${
                 userLoc ? 'border-green-400/40 text-green-300' : 'border-amber-400/40 text-amber-300'
               }`}
             >
-              {relocating
-                ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-400 border-t-white" />
-                : <LocateFixed className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{userLoc ? 'Located' : 'Set location'}</span>
+              <LocateFixed className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{userLoc ? (userLoc.label || 'Located') : 'Set location'}</span>
             </button>
             <Link
               to={session ? '/account' : '/login'}
@@ -291,30 +280,60 @@ export default function Landing() {
         </header>
 
         <div className="mx-auto max-w-5xl px-5 pb-10 pt-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <h1 className="text-2xl font-bold leading-tight sm:text-4xl">
-              Hungry? Order direct.
-              <span className="text-gold"> Zero commission.</span>
-            </h1>
+          <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:justify-between">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="min-w-0 flex-1"
+            >
+              <h1 className="text-2xl font-bold leading-tight sm:text-4xl">
+                Hungry? Order direct.
+                <span className="text-gold"> Zero commission.</span>
+              </h1>
 
-            {/* Search */}
-            <div className="mt-5 flex max-w-md items-center gap-2 rounded-2xl bg-white p-1.5 shadow-xl">
-              <Search className="ml-2.5 h-4 w-4 shrink-0 text-slate-400" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search dishes, restaurants, cuisines…"
-                className="min-w-0 flex-1 bg-transparent py-2 pr-3 text-sm text-navy outline-none placeholder:text-slate-400"
-                aria-label="Search"
-              />
-            </div>
+              {/* Search */}
+              <div className="mt-5 flex max-w-md items-center gap-2 rounded-2xl bg-white p-1.5 shadow-xl">
+                <Search className="ml-2.5 h-4 w-4 shrink-0 text-slate-400" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search dishes, restaurants, cuisines…"
+                  className="min-w-0 flex-1 bg-transparent py-2 pr-3 text-sm text-navy outline-none placeholder:text-slate-400"
+                  aria-label="Search"
+                />
+              </div>
 
-            {!userLoc && (
-              <p className="mt-3 text-xs text-amber-300">
-                Location not set — showing all restaurants. Tap "Set location" above for nearest-first.
+              {!userLoc && (
+                <p className="mt-3 text-xs text-amber-300">
+                  Location not set — showing all restaurants. Set it for nearest-first sorting.
+                </p>
+              )}
+            </motion.div>
+
+            {/* Delivery location card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="flex shrink-0 flex-col items-center gap-2 pb-2"
+            >
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400">
+                Delivering to
               </p>
-            )}
-          </motion.div>
+              <LocationMap
+                location={userLoc?.label || 'Location not set'}
+                coordinates={userLoc ? formatCoords(userLoc.lat, userLoc.lng) : ''}
+              />
+              <button
+                type="button"
+                onClick={() => setLocSheetOpen(true)}
+                className="mt-4 rounded-full border border-white/20 px-4 py-1.5 text-xs font-semibold text-slate-300 hover:border-gold hover:text-gold"
+              >
+                {userLoc ? 'Change location' : 'Set my location'}
+              </button>
+            </motion.div>
+          </div>
         </div>
       </div>
 
@@ -393,6 +412,12 @@ export default function Landing() {
           customer data stays yours.
         </footer>
       </main>
+
+      <LocationSheet
+        open={locSheetOpen}
+        onClose={() => setLocSheetOpen(false)}
+        onSelect={changeLocation}
+      />
     </div>
   );
 }
