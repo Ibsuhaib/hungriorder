@@ -6,6 +6,7 @@ import { supabase, callFunction } from '../lib/supabase.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { rupees } from '../lib/format.js';
+import { loadProfile } from '../lib/geo.js';
 import Spinner from '../components/Spinner.jsx';
 
 const PAYMENT_OPTIONS = [
@@ -22,7 +23,8 @@ export default function Checkout() {
 
   const [restaurant, setRestaurant] = useState(null);
   const [orderType, setOrderType] = useState('delivery');
-  const [phone, setPhone] = useState('');
+  // Prefill from the entry-gate profile (the number entered on the landing page)
+  const [phone, setPhone] = useState(() => loadProfile()?.phone ?? '');
   const [name, setName] = useState('');
   const [address, setAddress] = useState({ line1: '', line2: '', city: '', pincode: '' });
   const [savedIdx, setSavedIdx] = useState(-1);

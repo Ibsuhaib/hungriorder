@@ -36,7 +36,13 @@ export default function Restaurant() {
       if (!r) return setState('notfound');
       const [{ data: cats }, { data: menu }] = await Promise.all([
         supabase.from('categories').select('*').eq('restaurant_id', r.id).order('display_order'),
-        supabase.from('menu_items').select('*').eq('restaurant_id', r.id).eq('available', true).order('name'),
+        supabase
+          .from('menu_items')
+          .select('*')
+          .eq('restaurant_id', r.id)
+          .eq('available', true)
+          .eq('online_available', true) // restaurant chose to hide some dishes online
+          .order('name'),
       ]);
       if (cancelled) return;
       setRestaurant(r);

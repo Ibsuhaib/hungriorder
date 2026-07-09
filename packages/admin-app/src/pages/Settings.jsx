@@ -41,6 +41,8 @@ export default function Settings() {
         min_order_amount: restaurant.min_order_amount ?? 0,
         delivery_fee: restaurant.delivery_fee ?? 0,
         opening_hours: { ...(restaurant.opening_hours ?? {}) },
+        latitude: restaurant.latitude ?? null,
+        longitude: restaurant.longitude ?? null,
       });
     }
   }, [restaurant, form]);
@@ -69,6 +71,8 @@ export default function Settings() {
         opening_hours: Object.fromEntries(
           Object.entries(form.opening_hours).filter(([, v]) => v && v.trim())
         ),
+        latitude: form.latitude === null || form.latitude === '' ? null : Number(form.latitude),
+        longitude: form.longitude === null || form.longitude === '' ? null : Number(form.longitude),
       };
       if (logoFile) update.logo_url = await uploadBrandImage(restaurant.id, logoFile, 'logo');
       if (coverFile) update.cover_image_url = await uploadBrandImage(restaurant.id, coverFile, 'cover');
@@ -171,6 +175,46 @@ export default function Settings() {
               {coverFile ? coverFile.name : restaurant.cover_image_url ? 'Replace cover image' : 'Upload cover image'}
               <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} />
             </label>
+          </div>
+        </section>
+
+        <section className="card space-y-3">
+          <h2 className="text-sm font-bold">Restaurant location</h2>
+          <p className="text-xs text-slate-400">
+            Customers see the nearest restaurants first, and your delivery radius is measured from
+            this point. Tap the button while you're at the restaurant.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (!navigator.geolocation) return setMessage({ type: 'err', text: 'Location is not supported on this device.' });
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => {
+                    set('latitude', Number(pos.coords.latitude.toFixed(6)));
+                    set('longitude', Number(pos.coords.longitude.toFixed(6)));
+                    setMessage({ type: 'ok', text: 'Location captured — save to apply.' });
+                  },
+                  () => setMessage({ type: 'err', text: 'Could not get location. Allow location access and try again.' }),
+                  { enableHighAccuracy: true, timeout: 15000 }
+                );
+              }}
+              className="rounded-xl border border-dashed border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:border-gold"
+            >
+              📍 {form.latitude ? 'Update location' : 'Capture current location'}
+            </button>
+            {form.latitude && form.longitude ? (
+              <a
+                href={`https://maps.google.com/?q=${form.latitude},${form.longitude}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-navy underline underline-offset-2"
+              >
+                {Number(form.latitude).toFixed(4)}, {Number(form.longitude).toFixed(4)} — view on map
+              </a>
+            ) : (
+              <span className="text-xs text-amber-600">Not set — you won't appear in "nearest" sorting</span>
+            )}
           </div>
         </section>
 
