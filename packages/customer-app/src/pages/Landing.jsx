@@ -162,6 +162,22 @@ export default function Landing() {
   const hasEntered = Boolean(profile?.phone);
   const userLoc = profile?.location ?? null;
 
+  // Heal locations saved before the geocoding provider was configured: they
+  // have coordinates but a missing/placeholder label. Re-geocode once so the
+  // stored location picks up the accurate area name.
+  useEffect(() => {
+    if (!userLoc || !isConfigured) return;
+    if (userLoc.label && userLoc.label !== 'Current location') return;
+    let cancelled = false;
+    import('../lib/geo.js').then(({ reverseGeocode }) =>
+      reverseGeocode(userLoc.lat, userLoc.lng).then((place) => {
+        if (cancelled || !place?.label || place.label === 'Current location') return;
+        setProfile(saveProfile({ location: { ...userLoc, ...place } }));
+      })
+    ).catch(() => {});
+    return () => { cancelled = true; };
+  }, [userLoc, setProfile]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     document.title = 'hungriOrder — order direct from restaurants near you';
     if (!hasEntered || !isConfigured) return;
