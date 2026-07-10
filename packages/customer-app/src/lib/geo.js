@@ -81,16 +81,58 @@ export const LOCATION_ERROR_MESSAGES = {
 };
 
 // ---------------------------------------------------------------------------
-// Geocoding. Google (Geocoding API) when VITE_GOOGLE_MAPS_API_KEY is set —
-// much more accurate in India — with automatic fallback to OpenStreetMap
-// Nominatim (no key needed) so the app always works.
+// Geocoding. Provider preference:
+//   1. Ola Maps (VITE_OLA_MAPS_API_KEY) — India-focused data, free 5M
+//      calls/month, key signup needs no billing card.
+//   2. Google Geocoding API (VITE_GOOGLE_MAPS_API_KEY).
+//   3. OpenStreetMap Nominatim — no key, always available.
+// Each layer falls through to the next on error, so the app always works.
 // ---------------------------------------------------------------------------
+const OLA_KEY = import.meta.env.VITE_OLA_MAPS_API_KEY || '';
 const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 const NOMINATIM = 'https://nominatim.openstreetmap.org';
 
 function shortLabel({ area, city }, fallback) {
   const parts = [area, city].filter(Boolean);
   return parts.length ? parts.join(', ') : (fallback || 'Selected location');
+}
+
+// ── Ola Maps helpers (response shape mirrors Google's) ──────────────────────
+const OLA_BASE = 'https://api.olamaps.io/places/v1';
+
+async function olaReverse(lat, lng) {
+  const res = await fetch(
+    `${OLA_BASE}/reverse-geocode?latlng=${lat},${lng}&api_key=${OLA_KEY}`,
+    { headers: { Accept: 'application/json' } }
+  );
+  if (!res.ok) throw new Error(`ola reverse failed (${res.status})`);
+  const json = await res.json();
+  const results = json.results ?? json.geocodingResults ?? [];
+  if (!results.length) throw new Error('ola reverse: no results');
+  const best = results[0];
+  const parts = partsFromGoogle(best.address_components ?? []);
+  return { ...parts, label: shortLabel(parts, best.name || best.formatted_address?.split(',')[0]) };
+}
+
+async function olaSearch(q) {
+  const res = await fetch(
+    `${OLA_BASE}/geocode?address=${encodeURIComponent(q)}&language=English&api_key=${OLA_KEY}`,
+    { headers: { Accept: 'application/json' } }
+  );
+  if (!res.ok) throw new Error(`ola search failed (${res.status})`);
+  const json = await res.json();
+  const results = json.results ?? json.geocodingResults ?? [];
+  return results.slice(0, 6).map((r) => {
+    const parts = partsFromGoogle(r.address_components ?? []);
+    const loc = r.geometry?.location ?? {};
+    return {
+      lat: Number(loc.lat),
+      lng: Number(loc.lng),
+      ...parts,
+      label: shortLabel(parts, r.name || r.formatted_address?.split(',')[0]),
+      display: r.formatted_address,
+    };
+  }).filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lng));
 }
 
 // ── Google helpers ──────────────────────────────────────────────────────────
@@ -184,6 +226,13 @@ async function osmSearch(q) {
 
 /** lat/lng → { label, area, city, pincode } (best-effort; never throws) */
 export async function reverseGeocode(lat, lng) {
+  if (OLA_KEY) {
+    try {
+      return await olaReverse(lat, lng);
+    } catch (err) {
+      console.warn('Ola Maps reverse geocode failed, trying next provider:', err?.message);
+    }
+  }
   if (GOOGLE_KEY) {
     try {
       return await googleReverse(lat, lng);
@@ -202,6 +251,14 @@ export async function reverseGeocode(lat, lng) {
 export async function searchPlaces(query) {
   const q = query.trim();
   if (q.length < 3) return [];
+  if (OLA_KEY) {
+    try {
+      const found = await olaSearch(q);
+      if (found.length) return found;
+    } catch (err) {
+      console.warn('Ola Maps place search failed, trying next provider:', err?.message);
+    }
+  }
   if (GOOGLE_KEY) {
     try {
       return await googleSearch(q);
