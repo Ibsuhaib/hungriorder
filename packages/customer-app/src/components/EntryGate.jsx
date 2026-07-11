@@ -43,12 +43,12 @@ export default function EntryGate({ onDone }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-navy">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-ink">
       <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-2 text-lg font-bold text-white">
-            <UtensilsCrossed className="h-7 w-7 text-gold" />
-            <span>hungri<span className="text-gold">Order</span></span>
+            <UtensilsCrossed className="h-7 w-7 text-ember-light" />
+            <span>hungri<span className="text-ember-light">Order</span></span>
           </div>
           <h1 className="mt-6 text-2xl font-bold leading-snug text-white">
             Great food, direct from
@@ -63,9 +63,9 @@ export default function EntryGate({ onDone }) {
             {/* Phone */}
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-                <Smartphone className="h-3.5 w-3.5 text-gold" /> Mobile number
+                <Smartphone className="h-3.5 w-3.5 text-ember-light" /> Mobile number
               </label>
-              <div className="flex overflow-hidden rounded-2xl bg-white focus-within:ring-2 focus-within:ring-gold">
+              <div className="flex overflow-hidden rounded-2xl bg-white focus-within:ring-2 focus-within:ring-ember">
                 <span className="flex items-center bg-slate-100 px-3 text-sm text-slate-500">+91</span>
                 <input
                   type="tel"
@@ -82,7 +82,7 @@ export default function EntryGate({ onDone }) {
             {/* Location */}
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-                <MapPin className="h-3.5 w-3.5 text-gold" /> Your location
+                <MapPin className="h-3.5 w-3.5 text-ember-light" /> Your location
               </label>
 
               <button
@@ -92,7 +92,7 @@ export default function EntryGate({ onDone }) {
                 className={`flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed py-3.5 text-sm font-semibold transition-colors ${
                   locState === 'ok'
                     ? 'border-green-400 bg-green-400/10 text-green-300'
-                    : 'border-white/25 text-slate-300 hover:border-gold hover:text-gold'
+                    : 'border-white/25 text-slate-300 hover:border-ember-light hover:text-ember-light'
                 }`}
               >
                 {locState === 'asking' ? (
@@ -111,7 +111,7 @@ export default function EntryGate({ onDone }) {
               <button
                 type="button"
                 onClick={() => setSheetOpen(true)}
-                className="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-medium text-slate-400 underline underline-offset-4 hover:text-gold"
+                className="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-medium text-slate-400 underline underline-offset-4 hover:text-ember-light"
               >
                 <Search className="h-3 w-3" />
                 {locState === 'ok' ? 'Deliver somewhere else? Search your area' : 'Or search your area manually'}
@@ -127,7 +127,7 @@ export default function EntryGate({ onDone }) {
             <button
               type="submit"
               disabled={!phoneValid}
-              className="w-full rounded-2xl bg-gold py-4 font-bold text-navy shadow-lg disabled:opacity-40"
+              className="btn-ember w-full !rounded-2xl py-4 text-base shadow-ember-glow-lg disabled:opacity-40"
             >
               Start Ordering
             </button>

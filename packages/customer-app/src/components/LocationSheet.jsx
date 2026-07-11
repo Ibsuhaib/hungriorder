@@ -85,12 +85,12 @@ export default function LocationSheet({ open, onClose, onSelect }) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] w-full max-w-lg flex-col rounded-t-3xl bg-white shadow-2xl"
+            className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] w-full max-w-lg flex-col rounded-t-3xl border-t border-white/10 bg-ink-raised shadow-2xl"
           >
             <div className="flex items-center justify-between px-5 pb-3 pt-5">
-              <h2 className="text-base font-bold text-navy">Choose delivery location</h2>
-              <button aria-label="Close" onClick={onClose} className="rounded-full p-1.5 hover:bg-slate-100">
-                <X className="h-5 w-5 text-slate-500" />
+              <h2 className="text-base font-bold text-white/90">Choose delivery location</h2>
+              <button aria-label="Close" onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10">
+                <X className="h-5 w-5 text-white/50" />
               </button>
             </div>
 
@@ -100,65 +100,65 @@ export default function LocationSheet({ open, onClose, onSelect }) {
                 type="button"
                 onClick={useCurrent}
                 disabled={detecting}
-                className="flex w-full items-center gap-3 rounded-2xl border-2 border-gold/60 bg-gold/10 px-4 py-3.5 text-left transition-colors hover:bg-gold/20 disabled:opacity-60"
+                className="flex w-full items-center gap-3 rounded-2xl border-2 border-ember/50 bg-ember/10 px-4 py-3.5 text-left transition-colors hover:bg-ember/20 disabled:opacity-60"
               >
                 {detecting
-                  ? <Loader2 className="h-5 w-5 shrink-0 animate-spin text-gold-dark" />
-                  : <LocateFixed className="h-5 w-5 shrink-0 text-gold-dark" />}
+                  ? <Loader2 className="h-5 w-5 shrink-0 animate-spin text-ember-light" />
+                  : <LocateFixed className="h-5 w-5 shrink-0 text-ember-light" />}
                 <span>
-                  <span className="block text-sm font-bold text-navy">
+                  <span className="block text-sm font-bold text-white/90">
                     {detecting ? 'Detecting your location…' : 'Use my current location'}
                   </span>
-                  <span className="block text-xs text-slate-500">Your browser will ask for permission</span>
+                  <span className="block text-xs text-white/40">Your browser will ask for permission</span>
                 </span>
               </button>
 
               {error && (
-                <p role="alert" className="rounded-xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+                <p role="alert" className="rounded-xl bg-amber-400/10 px-4 py-3 text-xs leading-relaxed text-amber-300">
                   {error}
                 </p>
               )}
 
               {/* Divider */}
               <div className="flex items-center gap-3 py-1">
-                <span className="h-px flex-1 bg-slate-100" />
-                <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">or search</span>
-                <span className="h-px flex-1 bg-slate-100" />
+                <span className="h-px flex-1 bg-white/10" />
+                <span className="text-[11px] font-medium uppercase tracking-wide text-white/30">or search</span>
+                <span className="h-px flex-1 bg-white/10" />
               </div>
 
               {/* Search */}
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 focus-within:border-gold">
-                <Search className="h-4 w-4 shrink-0 text-slate-400" />
+              <div className="flex items-center gap-2 rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 focus-within:border-ember/50">
+                <Search className="h-4 w-4 shrink-0 text-white/35" />
                 <input
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); setError(''); }}
                   placeholder="Search your area, street or city…"
-                  className="min-w-0 flex-1 py-3 text-sm text-navy outline-none placeholder:text-slate-400"
+                  className="min-w-0 flex-1 bg-transparent py-3 text-sm text-white/90 outline-none placeholder:text-white/30"
                   autoFocus
                 />
-                {searching && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-slate-300" />}
+                {searching && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-white/30" />}
               </div>
 
               {/* Results */}
               {results !== null && (
                 results.length === 0 && !searching ? (
-                  <p className="px-2 py-4 text-center text-xs text-slate-400">
+                  <p className="px-2 py-4 text-center text-xs text-white/35">
                     No places found — try a broader name (area or city).
                   </p>
                 ) : (
-                  <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100">
+                  <ul className="divide-y divide-white/[0.06] overflow-hidden rounded-2xl border border-white/[0.08]">
                     {results.map((r, i) => (
                       <li key={`${r.lat}-${r.lng}-${i}`}>
                         <button
                           type="button"
                           onClick={() => pick(r)}
-                          className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50"
+                          className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-white/5"
                         >
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-dark" />
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ember-light" />
                           <span className="min-w-0">
-                            <span className="block truncate text-sm font-semibold text-navy">{r.label}</span>
+                            <span className="block truncate text-sm font-semibold text-white/90">{r.label}</span>
                             {r.display && (
-                              <span className="mt-0.5 block truncate text-xs text-slate-400">{r.display}</span>
+                              <span className="mt-0.5 block truncate text-xs text-white/35">{r.display}</span>
                             )}
                           </span>
                         </button>
@@ -168,7 +168,7 @@ export default function LocationSheet({ open, onClose, onSelect }) {
                 )
               )}
 
-              <p className="pt-1 text-center text-[10px] text-slate-300">
+              <p className="pt-1 text-center text-[10px] text-white/20">
                 Search powered by OpenStreetMap
               </p>
             </div>

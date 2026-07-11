@@ -7,7 +7,94 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-white font-sans text-navy antialiased;
+    @apply bg-ink font-sans text-white/90 antialiased;
+  }
+  button:active,
+  [role='button']:active {
+    transform: scale(0.97);
+  }
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(211, 85, 47, 0.35);
+    border-radius: 9999px;
+  }
+}
+
+@layer components {
+  /* Sticky glass header — same treatment as the QR menu */
+  .glass-top {
+    @apply sticky top-0 z-40 border-b border-white/[0.07] bg-ink/90;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Dark card — QR menu item-card surface */
+  .card-dark {
+    @apply rounded-[20px] border border-white/[0.07] bg-white/[0.04];
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Round icon button (search / cart / back) */
+  .icon-btn {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60;
+  }
+  .icon-btn-ember {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ember/30 bg-ember/10 text-ember-light;
+  }
+
+  /* Category / filter pill */
+  .pill {
+    @apply inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[0.8rem] font-bold text-white/45 transition-colors;
+  }
+  .pill-active {
+    @apply border-ember/50 text-ember-light;
+    background: linear-gradient(135deg, rgba(211, 85, 47, 0.22), rgba(211, 85, 47, 0.12));
+    box-shadow: 0 0 18px rgba(211, 85, 47, 0.12);
+  }
+
+  /* Primary gradient button — "Add +" / "Place Order" */
+  .btn-ember {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-extrabold text-white transition-shadow disabled:opacity-40;
+    background: linear-gradient(135deg, #d3552f 0%, #ff6b3d 100%);
+    box-shadow: 0 3px 14px rgba(211, 85, 47, 0.38);
+  }
+  .btn-ember-bar {
+    @apply flex w-full items-center justify-between rounded-[18px] px-5 py-3.5 font-bold text-white;
+    background: linear-gradient(135deg, #c04020 0%, #d3552f 50%, #e8673f 100%);
+    box-shadow: 0 8px 36px rgba(211, 85, 47, 0.5);
+  }
+
+  /* Dark input */
+  .input-dark {
+    @apply w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-4 py-3 text-sm text-white/90 outline-none placeholder:text-white/30 focus:border-ember/50;
+  }
+
+  /* Gradient price text */
+  .price-grad {
+    background: linear-gradient(135deg, #ff8060 0%, #d3552f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    @apply font-extrabold;
+  }
+
+  /* Eyebrow section label */
+  .section-label {
+    @apply flex items-center gap-2;
+  }
+  .section-label::before {
+    content: '';
+    @apply block h-0.5 w-4 rounded-full;
+    background: linear-gradient(90deg, #d3552f, transparent);
+  }
+  .section-label > span {
+    @apply text-[0.62rem] font-extrabold uppercase tracking-[2.5px] text-ember-light/85;
   }
 }
 
@@ -18,5 +105,15 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  /* Ambient radial glow layers */
+  .ambient-ember {
+    background: radial-gradient(ellipse 80% 55% at 50% -5%, rgba(211, 85, 47, 0.22) 0%, transparent 70%);
+  }
+  .hero-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
   }
 }

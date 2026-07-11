@@ -9,8 +9,10 @@ const Restaurant = lazy(() => import('./pages/Restaurant.jsx'));
 const Checkout = lazy(() => import('./pages/Checkout.jsx'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess.jsx'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder.jsx'));
-const Login = lazy(() => import('./pages/Login.jsx'));
-const Account = lazy(() => import('./pages/Account.jsx'));
+
+// Note: customer sign-in (/login, /account) is intentionally not routed —
+// phone-OTP auth isn't configured yet. Customers order as guests; the pages
+// still exist under src/pages for when OTP is enabled.
 
 export default function App() {
   return (
@@ -24,8 +26,6 @@ export default function App() {
               <Route path="/r/:slug/checkout" element={<Checkout />} />
               <Route path="/r/:slug/success/:orderId" element={<OrderSuccess />} />
               <Route path="/order/:orderId" element={<TrackOrder />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/account" element={<Account />} />
               <Route path="*" element={<Landing />} />
             </Routes>
           </Suspense>

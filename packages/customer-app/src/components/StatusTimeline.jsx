@@ -17,7 +17,7 @@ const TAKEAWAY_STEPS = DELIVERY_STEPS.filter((s) => s.key !== 'out_for_delivery'
 export default function StatusTimeline({ status, orderType }) {
   if (status === 'cancelled') {
     return (
-      <div className="flex items-center gap-3 rounded-2xl bg-red-50 p-4 text-red-700">
+      <div className="flex items-center gap-3 rounded-2xl bg-red-500/15 p-4 text-red-300">
         <XCircle className="h-6 w-6" />
         <div>
           <p className="font-semibold">Order cancelled</p>
@@ -44,21 +44,21 @@ export default function StatusTimeline({ status, orderType }) {
                 transition={active ? { repeat: Infinity, duration: 1.6 } : {}}
                 className={`flex h-9 w-9 items-center justify-center rounded-full border-2 ${
                   done
-                    ? 'border-gold bg-gold text-navy'
+                    ? 'border-ember bg-ember text-white'
                     : active
-                      ? 'border-gold bg-white text-gold'
-                      : 'border-slate-200 bg-white text-slate-300'
+                      ? 'border-ember bg-ink text-ember-light'
+                      : 'border-white/15 bg-ink text-white/25'
                 }`}
               >
                 {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
               </motion.div>
               {i < steps.length - 1 && (
-                <div className={`h-8 w-0.5 ${done ? 'bg-gold' : 'bg-slate-200'}`} />
+                <div className={`h-8 w-0.5 ${done ? "bg-ember" : "bg-white/10"}`} />
               )}
             </div>
             <p
               className={`pt-1.5 text-sm ${
-                active ? 'font-bold text-navy' : done ? 'font-medium text-slate-600' : 'text-slate-400'
+                active ? 'font-bold text-white/90' : done ? 'font-medium text-white/60' : 'text-white/30'
               }`}
             >
               {step.label}
