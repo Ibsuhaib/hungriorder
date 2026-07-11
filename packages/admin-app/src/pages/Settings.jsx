@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Upload, BadgeCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import LocationPickerModal from '../components/LocationPickerModal.jsx';
 
 const DAYS = [
   ['mon', 'Monday'], ['tue', 'Tuesday'], ['wed', 'Wednesday'], ['thu', 'Thursday'],
@@ -26,6 +27,7 @@ export default function Settings() {
   const [coverFile, setCoverFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null); // {type, text}
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
   useEffect(() => {
     if (restaurant && !form) {
@@ -201,7 +203,14 @@ export default function Settings() {
               }}
               className="rounded-xl border border-dashed border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:border-gold"
             >
-              📍 {form.latitude ? 'Update location' : 'Capture current location'}
+              📍 Use current location
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapPickerOpen(true)}
+              className="rounded-xl border border-dashed border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:border-gold"
+            >
+              🗺️ Pick on map
             </button>
             {form.latitude && form.longitude ? (
               <a
@@ -282,6 +291,18 @@ export default function Settings() {
           {busy ? 'Saving…' : 'Save changes'}
         </button>
       </form>
+
+      <LocationPickerModal
+        open={mapPickerOpen}
+        onClose={() => setMapPickerOpen(false)}
+        initialLat={form.latitude === null || form.latitude === '' ? null : Number(form.latitude)}
+        initialLng={form.longitude === null || form.longitude === '' ? null : Number(form.longitude)}
+        onSave={({ lat, lng }) => {
+          set('latitude', Number(lat.toFixed(6)));
+          set('longitude', Number(lng.toFixed(6)));
+          setMessage({ type: 'ok', text: 'Location set — save changes to apply.' });
+        }}
+      />
     </div>
   );
 }
