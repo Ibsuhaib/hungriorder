@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, LocateFixed, Search, MapPin, Loader2 } from 'lucide-react';
+import { X, LocateFixed, Search, MapPin, Loader2, Map } from 'lucide-react';
 import { detectLocation, reverseGeocode, searchPlaces, LOCATION_ERROR_MESSAGES } from '../lib/geo.js';
+import LocationPickerMap from './LocationPickerMap.jsx';
 
 /**
  * Bottom sheet for choosing the delivery location — Zomato style:
- * "use my current location" (GPS + reverse geocode) or search any area/city.
+ * "use my current location" (GPS + reverse geocode), search any area/city,
+ * or drop a pin on the map for the exact spot.
  * Calls onSelect({ lat, lng, label, area, city, pincode, at }).
  */
-export default function LocationSheet({ open, onClose, onSelect }) {
+export default function LocationSheet({ open, onClose, onSelect, initial = null }) {
   const [detecting, setDetecting] = useState(false);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(null); // null = nothing searched yet
   const [searching, setSearching] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -113,6 +116,19 @@ export default function LocationSheet({ open, onClose, onSelect }) {
                 </span>
               </button>
 
+              {/* Exact pin on map */}
+              <button
+                type="button"
+                onClick={() => setMapOpen(true)}
+                className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.12] bg-white/[0.04] px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
+              >
+                <Map className="h-5 w-5 shrink-0 text-ember-light" />
+                <span>
+                  <span className="block text-sm font-bold text-white/90">Pin exact location on map</span>
+                  <span className="block text-xs text-white/40">Drag a pin to your doorstep</span>
+                </span>
+              </button>
+
               {error && (
                 <p role="alert" className="rounded-xl bg-amber-400/10 px-4 py-3 text-xs leading-relaxed text-amber-300">
                   {error}
@@ -173,6 +189,17 @@ export default function LocationSheet({ open, onClose, onSelect }) {
               </p>
             </div>
           </motion.div>
+
+          <LocationPickerMap
+            open={mapOpen}
+            onClose={() => setMapOpen(false)}
+            initial={initial}
+            onSelect={(loc) => {
+              setMapOpen(false);
+              onSelect(loc);
+              onClose();
+            }}
+          />
         </>
       )}
     </AnimatePresence>

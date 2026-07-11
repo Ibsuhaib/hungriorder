@@ -417,6 +417,7 @@ export default function Landing() {
         open={locSheetOpen}
         onClose={() => setLocSheetOpen(false)}
         onSelect={changeLocation}
+        initial={userLoc}
       />
     </div>
   );

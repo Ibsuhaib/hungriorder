@@ -143,6 +143,7 @@ export default function EntryGate({ onDone }) {
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         onSelect={(loc) => { setLocation(loc); setLocState('ok'); setLocError(''); }}
+        initial={location}
       />
     </div>
   );
