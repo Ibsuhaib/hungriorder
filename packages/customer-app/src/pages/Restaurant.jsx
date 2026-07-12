@@ -198,12 +198,12 @@ export default function Restaurant() {
               type="button"
               onClick={() => setCartOpen(true)}
               aria-label="Open cart"
-              className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ember/30 ${
-                count > 0 ? 'text-white shadow-ember-glow' : 'bg-ember/10 text-ember-light'
+              className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ember/30 ${
+                count > 0 ? 'text-ink shadow-ember-glow' : 'bg-ember/10 text-ember-light'
               }`}
-              style={count > 0 ? { background: 'linear-gradient(135deg, #d3552f, #ff6b3d)' } : undefined}
+              style={count > 0 ? { background: 'linear-gradient(135deg, #d4a373, #e6c69a)' } : undefined}
             >
-              <ShoppingBag size={15} />
+              <ShoppingBag size={17} />
               <AnimatePresence>
                 {count > 0 && (
                   <motion.span
@@ -212,7 +212,7 @@ export default function Restaurant() {
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
                     transition={spring}
-                    className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[9px] font-black text-ember"
+                    className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-black text-ember-dark"
                   >
                     {count}
                   </motion.span>
@@ -242,12 +242,12 @@ export default function Restaurant() {
                   src={restaurant.logo_url}
                   alt={restaurant.name}
                   className="mx-auto h-[76px] w-[76px] rounded-full object-cover"
-                  style={{ boxShadow: '0 0 0 2px rgba(211,85,47,0.45), 0 0 0 6px rgba(211,85,47,0.1), 0 12px 40px rgba(211,85,47,0.3)' }}
+                  style={{ boxShadow: '0 0 0 2px rgba(212, 163, 115,0.45), 0 0 0 6px rgba(212, 163, 115,0.1), 0 12px 40px rgba(212, 163, 115,0.3)' }}
                 />
               ) : (
                 <div
                   className="mx-auto flex h-[76px] w-[76px] items-center justify-center rounded-full bg-gradient-to-br from-ember to-ember-mid text-3xl font-black text-white"
-                  style={{ boxShadow: '0 0 0 2px rgba(211,85,47,0.45), 0 0 0 6px rgba(211,85,47,0.1), 0 12px 40px rgba(211,85,47,0.35)' }}
+                  style={{ boxShadow: '0 0 0 2px rgba(212, 163, 115,0.45), 0 0 0 6px rgba(212, 163, 115,0.1), 0 12px 40px rgba(212, 163, 115,0.35)' }}
                 >
                   {restaurant.name.charAt(0).toUpperCase()}
                 </div>
@@ -274,7 +274,7 @@ export default function Restaurant() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.18 }}
-                className="mt-1.5 text-xs capitalize text-white/35"
+                className="mt-1.5 text-xs capitalize text-white/50"
               >
                 {restaurant.cuisine_tags.slice(0, 4).join(' · ').replaceAll('-', ' ')}
               </motion.p>
@@ -309,13 +309,13 @@ export default function Restaurant() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="mx-auto mt-3 max-w-md text-xs leading-relaxed text-white/35"
+                className="mx-auto mt-3 max-w-md text-xs leading-relaxed text-white/55"
               >
                 {restaurant.description}
               </motion.p>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[0.7rem] text-white/30">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[0.72rem] text-white/45">
               {restaurant.address && (
                 <span className="flex items-center gap-1"><MapPin size={11} />{restaurant.address}</span>
               )}
@@ -342,6 +342,16 @@ export default function Restaurant() {
 
         {/* ── Menu list ─────────────────────────────────────────────── */}
         <div className="px-4 pb-2 pt-5">
+          {/* Closed banner — menu stays browsable, ordering is disabled */}
+          {!open && (
+            <div className="mb-4 rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-center">
+              <p className="text-sm font-bold text-amber-300">Currently closed</p>
+              <p className="mt-0.5 text-xs text-amber-200/70">
+                {today ? `Today's hours: ${today}` : 'Ordering will open when the restaurant is back.'}
+              </p>
+            </div>
+          )}
+
           <div className="section-label mb-4">
             <span>{searchQuery ? `Results for "${searchQuery}"` : sectionLabel}</span>
           </div>
@@ -362,6 +372,7 @@ export default function Restaurant() {
                     qty={qtyOf(item.id)}
                     onAdd={() => add(restaurant, item)}
                     onSetQty={setQty}
+                    closed={!open}
                   />
                 ))}
               </AnimatePresence>

@@ -1,10 +1,29 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, MapPin, Printer, ReceiptText, StickyNote } from 'lucide-react';
+import { Phone, MapPin, Printer, ReceiptText, StickyNote, MessageCircle } from 'lucide-react';
 import StatusBadge from './StatusBadge.jsx';
+import Modal from './Modal.jsx';
 import { rupees, shortId, timeAgo } from '../lib/format.js';
 import { printKot, printReceipt } from '../lib/print.js';
 import { callFunction } from '../lib/supabase.js';
+
+// Customer-facing storefront origin — the tracking page lives there.
+const STOREFRONT_URL =
+  import.meta.env.VITE_STOREFRONT_URL ||
+  `${window.location.protocol}//${window.location.host.replace('admin.', '')}`;
+
+// Prefilled WhatsApp message with the live tracking link. Free (wa.me),
+// opens WhatsApp with the text ready — the owner just hits send.
+function whatsappHref(order, restaurant) {
+  const phone = String(order.customer_phone || '').replace(/\D/g, '').slice(-10);
+  if (phone.length !== 10) return null;
+  const track = `${STOREFRONT_URL}/order/${order.id}`;
+  const msg =
+    `Hi${order.customer_name ? ' ' + order.customer_name : ''}! ` +
+    `Your order #${shortId(order.id)} at ${restaurant?.name ?? 'our restaurant'} is being prepared. ` +
+    `Track it live here: ${track}`;
+  return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
+}
 
 // Next-step actions per current status. Cancel is offered separately.
 function nextActions(order) {
@@ -31,10 +50,11 @@ const CANCELLABLE = ['pending', 'confirmed', 'preparing', 'ready'];
 export default function OrderCard({ order, restaurant, onStatusChange }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const addr = order.delivery_address;
+  const waHref = whatsappHref(order, restaurant);
 
   const update = async (newStatus) => {
-    if (newStatus === 'cancelled' && !window.confirm('Cancel this order?')) return;
     setBusy(true);
     setError('');
     try {
@@ -103,17 +123,27 @@ export default function OrderCard({ order, restaurant, onStatusChange }) {
             {a.label}
           </button>
         ))}
-        {order.status === 'pending' && (
-          <button disabled={busy} onClick={() => update('cancelled')} className="btn-ghost !text-red-600">
-            Reject
-          </button>
-        )}
-        {order.status !== 'pending' && CANCELLABLE.includes(order.status) && (
-          <button disabled={busy} onClick={() => update('cancelled')} className="btn-ghost !text-red-600">
-            Cancel
+        {CANCELLABLE.includes(order.status) && (
+          <button
+            disabled={busy}
+            onClick={() => setConfirmCancel(true)}
+            className="btn-ghost !border-red-200 !bg-red-50 !text-red-600 hover:!bg-red-100"
+          >
+            {order.status === 'pending' ? 'Reject' : 'Cancel'}
           </button>
         )}
         <span className="flex-1" />
+        {waHref && (
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-ghost flex items-center gap-1.5 !border-green-200 !bg-green-50 !text-green-700 hover:!bg-green-100"
+            title="Send the live tracking link on WhatsApp"
+          >
+            <MessageCircle className="h-4 w-4" /> WhatsApp
+          </a>
+        )}
         <button onClick={() => printKot(order)} className="btn-ghost flex items-center gap-1.5" title="Print kitchen order ticket">
           <Printer className="h-4 w-4" /> KOT
         </button>
@@ -121,6 +151,31 @@ export default function OrderCard({ order, restaurant, onStatusChange }) {
           <ReceiptText className="h-4 w-4" /> Receipt
         </button>
       </div>
+
+      {/* Themed cancel confirmation (replaces window.confirm) */}
+      <Modal open={confirmCancel} onClose={() => setConfirmCancel(false)} title={order.status === 'pending' ? 'Reject this order?' : 'Cancel this order?'}>
+        <p className="text-sm text-slate-600">
+          Order <span className="font-semibold">#{shortId(order.id)}</span> ·{' '}
+          {rupees(order.total_amount)} for {order.customer_name || 'the customer'}. This can't be
+          undone, and the customer will see it as cancelled on their tracking page.
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={() => setConfirmCancel(false)} className="btn-ghost">
+            Keep order
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setConfirmCancel(false);
+              update('cancelled');
+            }}
+            className="min-h-[44px] rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+          >
+            {order.status === 'pending' ? 'Reject order' : 'Cancel order'}
+          </button>
+        </div>
+      </Modal>
     </motion.article>
   );
 }

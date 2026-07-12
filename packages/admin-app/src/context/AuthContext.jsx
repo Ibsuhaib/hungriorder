@@ -64,7 +64,10 @@ export function AuthProvider({ children }) {
       // main admin panel instead of this lightweight app.
       hasHungriar: restaurant ? restaurant.has_hungriar !== false : false,
       setRestaurant,
-      signOut: () => supabase.auth.signOut(),
+      // scope: 'local' — only end THIS device's session. The default ('global')
+      // revokes every session on the account, logging the owner out of their
+      // phone when they sign out on the desktop (and vice versa).
+      signOut: () => supabase.auth.signOut({ scope: 'local' }),
     };
   }, [session, profile, restaurant, loading]);
 

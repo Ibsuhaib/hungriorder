@@ -3,12 +3,13 @@ import { Plus, Minus, X, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import VegBadge from './VegBadge.jsx';
-import { rupees } from '../lib/format.js';
+import { rupees, isOpenNow } from '../lib/format.js';
 
 export default function CartSheet({ open, onClose, restaurant }) {
   const { cart, subtotal, setQty } = useCart();
   const navigate = useNavigate();
   const deliveryFee = restaurant?.delivery_enabled ? Number(restaurant.delivery_fee ?? 0) : 0;
+  const restaurantOpen = isOpenNow(restaurant?.opening_hours);
 
   return (
     <AnimatePresence>
@@ -32,8 +33,8 @@ export default function CartSheet({ open, onClose, restaurant }) {
               <h2 className="flex items-center gap-2 text-lg font-bold text-white/90">
                 <ShoppingBag className="h-5 w-5 text-ember-light" /> Your order
               </h2>
-              <button aria-label="Close cart" onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10">
-                <X className="h-5 w-5 text-white/50" />
+              <button aria-label="Close cart" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10">
+                <X className="h-5 w-5 text-white/60" />
               </button>
             </div>
 
@@ -49,12 +50,12 @@ export default function CartSheet({ open, onClose, restaurant }) {
                         <p className="truncate text-sm font-semibold text-white/85">{item.name}</p>
                         <p className="text-xs text-white/35">{rupees(item.price)}</p>
                       </div>
-                      <div className="flex items-center gap-2 rounded-full border border-ember/30 bg-ember/10 px-1.5 py-1 text-ember-light">
-                        <button aria-label="Decrease quantity" onClick={() => setQty(item.id, item.qty - 1)} className="p-0.5">
+                      <div className="flex items-center gap-0.5 rounded-full border border-ember/30 bg-ember/10 px-1 py-0.5 text-ember-light">
+                        <button aria-label="Decrease quantity" onClick={() => setQty(item.id, item.qty - 1)} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10">
                           <Minus className="h-4 w-4" />
                         </button>
                         <span className="min-w-[1.2rem] text-center text-sm font-bold text-white/90">{item.qty}</span>
-                        <button aria-label="Increase quantity" onClick={() => setQty(item.id, Math.min(item.qty + 1, 50))} className="p-0.5">
+                        <button aria-label="Increase quantity" onClick={() => setQty(item.id, Math.min(item.qty + 1, 50))} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10">
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
@@ -85,13 +86,19 @@ export default function CartSheet({ open, onClose, restaurant }) {
                   </p>
                 </div>
 
+                {!restaurantOpen && (
+                  <p className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-2.5 text-center text-xs font-semibold text-amber-300">
+                    The restaurant is closed right now — you can order once it reopens.
+                  </p>
+                )}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
+                  disabled={!restaurantOpen}
                   onClick={() => {
                     onClose();
                     navigate(`/r/${cart.slug}/checkout`);
                   }}
-                  className="btn-ember-bar mt-4 justify-center gap-2 text-[0.95rem]"
+                  className="btn-ember-bar mt-4 justify-center gap-2 text-[0.95rem] disabled:opacity-40"
                 >
                   Place Order · {rupees(subtotal + deliveryFee)}
                 </motion.button>

@@ -58,6 +58,22 @@ export default function Orders() {
     return () => supabase.removeChannel(channel);
   }, [restaurant?.id, fetchOrders]);
 
+  // Polling fallback — realtime can silently miss INSERTs (dropped websocket,
+  // sleeping tab). A quiet refetch every 15s guarantees no order is lost.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (navigator.onLine) fetchOrders();
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [fetchOrders]);
+
+  // Refetch immediately when the owner switches back to this tab
+  useEffect(() => {
+    const onVisible = () => { if (!document.hidden) fetchOrders(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [fetchOrders]);
+
   const filtered = useMemo(() => {
     if (!orders) return [];
     if (tab === 'active') return orders.filter((o) => ACTIVE_STATUSES.includes(o.status));

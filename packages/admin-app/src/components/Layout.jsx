@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ClipboardList, UtensilsCrossed, Settings, LogOut, Menu as MenuIcon, X, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import OnlineOrderAlert from './OnlineOrderAlert.jsx';
 
 const LINKS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -50,7 +51,7 @@ export default function Layout({ children }) {
           await signOut();
           navigate('/login');
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-slate-400 hover:bg-white/10"
+        className="flex min-h-[44px] w-full items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/20 hover:text-red-200"
       >
         <LogOut className="h-4 w-4" /> Sign out
       </button>
@@ -76,7 +77,7 @@ export default function Layout({ children }) {
         <p className="font-bold text-white">
           hungri<span className="text-gold">Order</span>
         </p>
-        <button aria-label="Open menu" onClick={() => setOpen(!open)} className="rounded-lg p-1.5 text-white">
+        <button aria-label="Open menu" onClick={() => setOpen(!open)} className="flex h-11 w-11 items-center justify-center rounded-xl text-white hover:bg-white/10">
           {open ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
         </button>
       </div>
@@ -98,6 +99,9 @@ export default function Layout({ children }) {
           {profile && children}
         </div>
       </main>
+
+      {/* Incoming online orders — unread-message popup + chime, every page */}
+      {restaurant && <OnlineOrderAlert restaurantId={restaurant.id} />}
     </div>
   );
 }

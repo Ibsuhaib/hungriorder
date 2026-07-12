@@ -14,8 +14,8 @@ const INDIA_CENTER = [20.5937, 78.9629];
 
 const PIN_ICON = L.divIcon({
   className: '',
-  html: `<svg width="36" height="48" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 4px 8px rgba(211,85,47,0.5))">
-    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#ff6b3d" stroke="#c04020" stroke-width="1"/>
+  html: `<svg width="36" height="48" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 4px 8px rgba(212, 163, 115,0.5))">
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#e6c69a" stroke="#b8865a" stroke-width="1"/>
     <circle cx="12" cy="9" r="2.6" fill="#ffffff"/>
   </svg>`,
   iconSize: [36, 48],

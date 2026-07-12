@@ -5,7 +5,7 @@ import { ArrowLeft, Banknote, Smartphone, CreditCard, MapPin } from 'lucide-reac
 import { supabase, callFunction } from '../lib/supabase.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { rupees } from '../lib/format.js';
+import { rupees, isOpenNow } from '../lib/format.js';
 import { loadProfile } from '../lib/geo.js';
 import Spinner from '../components/Spinner.jsx';
 
@@ -81,10 +81,12 @@ export default function Checkout() {
   const addressValid = orderType === 'takeaway' || address.line1.trim().length > 3;
   const minOrder = Number(restaurant.min_order_amount ?? 0);
   const belowMin = orderType === 'delivery' && subtotal < minOrder;
+  const restaurantOpen = isOpenNow(restaurant.opening_hours);
 
   const submit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!restaurantOpen) return setError('The restaurant is closed right now. Please order during opening hours.');
     if (!phoneValid) return setError('Enter a valid 10-digit mobile number.');
     if (!addressValid) return setError('Enter a delivery address.');
     if (belowMin) return setError(`Minimum order for delivery is ${rupees(minOrder)}.`);
@@ -117,7 +119,7 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-ink pb-10">
       <header className="glass-top flex items-center gap-3 px-4 py-3">
-        <Link to={`/r/${slug}`} aria-label="Back to menu" className="rounded-full p-1.5 hover:bg-white/10">
+        <Link to={`/r/${slug}`} aria-label="Back to menu" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
@@ -275,7 +277,7 @@ export default function Checkout() {
                       value={opt.value}
                       checked={payment === opt.value}
                       onChange={() => setPayment(opt.value)}
-                      className="accent-[#d3552f]"
+                      className="accent-[#d4a373]"
                     />
                     <opt.icon className="h-4 w-4 text-white/45" />
                     {opt.label}
@@ -339,10 +341,15 @@ export default function Checkout() {
               </p>
             )}
 
+            {!restaurantOpen && (
+              <p className="rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-center text-sm font-semibold text-amber-300">
+                The restaurant is closed right now — ordering opens with their business hours.
+              </p>
+            )}
             <motion.button
               whileTap={{ scale: 0.97 }}
               type="submit"
-              disabled={submitting || belowMin}
+              disabled={submitting || belowMin || !restaurantOpen}
               className="btn-ember-bar justify-center gap-2 disabled:opacity-50"
             >
               {submitting ? 'Placing order…' : `Confirm Order · ${rupees(total)}`}

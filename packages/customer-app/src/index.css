@@ -9,9 +9,12 @@
   body {
     @apply bg-ink font-sans text-white/90 antialiased;
   }
-  button:active,
-  [role='button']:active {
-    transform: scale(0.97);
+  /* Focus ring for keyboard nav — gold, offset against the dark canvas.
+     (The old global button:active scale made every tap feel mushy; scale
+     feedback now lives only on the primary .btn-ember buttons.) */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #07070f, 0 0 0 4px rgba(212, 163, 115, 0.7);
   }
   ::-webkit-scrollbar {
     width: 5px;
@@ -21,7 +24,7 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: rgba(211, 85, 47, 0.35);
+    background-color: rgba(212, 163, 115, 0.35);
     border-radius: 9999px;
   }
 }
@@ -40,34 +43,36 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   }
 
-  /* Round icon button (search / cart / back) */
+  /* Round icon button (search / cart / back) — 40px touch target */
   .icon-btn {
-    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60;
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-transform active:scale-95;
   }
   .icon-btn-ember {
-    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ember/30 bg-ember/10 text-ember-light;
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ember/30 bg-ember/10 text-ember-light transition-transform active:scale-95;
   }
 
-  /* Category / filter pill */
+  /* Category / filter pill — min 40px tall for touch */
   .pill {
-    @apply inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[0.8rem] font-bold text-white/45 transition-colors;
+    @apply inline-flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[0.8rem] font-bold text-white/60 transition-colors;
   }
   .pill-active {
     @apply border-ember/50 text-ember-light;
-    background: linear-gradient(135deg, rgba(211, 85, 47, 0.22), rgba(211, 85, 47, 0.12));
-    box-shadow: 0 0 18px rgba(211, 85, 47, 0.12);
+    background: linear-gradient(135deg, rgba(212, 163, 115, 0.22), rgba(212, 163, 115, 0.12));
+    box-shadow: 0 0 18px rgba(212, 163, 115, 0.12);
   }
 
-  /* Primary gradient button — "Add +" / "Place Order" */
+  /* Primary gradient button — "Add +" / "Place Order".
+     Ink text on gold (not white) for readable contrast — same convention
+     as the admin panel's gold buttons. */
   .btn-ember {
-    @apply inline-flex items-center justify-center gap-2 rounded-full font-extrabold text-white transition-shadow disabled:opacity-40;
-    background: linear-gradient(135deg, #d3552f 0%, #ff6b3d 100%);
-    box-shadow: 0 3px 14px rgba(211, 85, 47, 0.38);
+    @apply inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full font-extrabold text-ink transition-transform active:scale-[0.97] disabled:opacity-40;
+    background: linear-gradient(135deg, #d4a373 0%, #e6c69a 100%);
+    box-shadow: 0 3px 14px rgba(212, 163, 115, 0.38);
   }
   .btn-ember-bar {
-    @apply flex w-full items-center justify-between rounded-[18px] px-5 py-3.5 font-bold text-white;
-    background: linear-gradient(135deg, #c04020 0%, #d3552f 50%, #e8673f 100%);
-    box-shadow: 0 8px 36px rgba(211, 85, 47, 0.5);
+    @apply flex min-h-[52px] w-full items-center justify-between rounded-[18px] px-5 py-3.5 font-bold text-ink transition-transform active:scale-[0.98];
+    background: linear-gradient(135deg, #b8865a 0%, #d4a373 50%, #ddb586 100%);
+    box-shadow: 0 8px 36px rgba(212, 163, 115, 0.5);
   }
 
   /* Dark input */
@@ -77,7 +82,7 @@
 
   /* Gradient price text */
   .price-grad {
-    background: linear-gradient(135deg, #ff8060 0%, #d3552f 100%);
+    background: linear-gradient(135deg, #e9cda3 0%, #d4a373 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -91,7 +96,7 @@
   .section-label::before {
     content: '';
     @apply block h-0.5 w-4 rounded-full;
-    background: linear-gradient(90deg, #d3552f, transparent);
+    background: linear-gradient(90deg, #d4a373, transparent);
   }
   .section-label > span {
     @apply text-[0.62rem] font-extrabold uppercase tracking-[2.5px] text-ember-light/85;
@@ -108,7 +113,7 @@
   }
   /* Ambient radial glow layers */
   .ambient-ember {
-    background: radial-gradient(ellipse 80% 55% at 50% -5%, rgba(211, 85, 47, 0.22) 0%, transparent 70%);
+    background: radial-gradient(ellipse 80% 55% at 50% -5%, rgba(212, 163, 115, 0.22) 0%, transparent 70%);
   }
   .hero-grid {
     background-image:

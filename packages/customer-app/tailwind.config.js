@@ -4,12 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Ember accent — same palette as the hungriAR QR menu
+        // Accent — hungriAR brand gold (matches the QR menu + admin panel).
+        // Token keeps the historical name "ember" so every existing
+        // ember-* class stays valid; only the values changed.
         ember: {
-          DEFAULT: '#d3552f',
-          light: '#ff8060',
-          mid: '#ff6b3d',
-          dark: '#c04020',
+          DEFAULT: '#d4a373',
+          light: '#e6c69a',
+          mid: '#ddb586',
+          dark: '#b8865a',
         },
         // Near-black canvas of the QR menu
         ink: {
@@ -31,8 +33,8 @@ export default {
         sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'ember-glow': '0 4px 18px rgba(211,85,47,0.4)',
-        'ember-glow-lg': '0 8px 36px rgba(211,85,47,0.5)',
+        'ember-glow': '0 4px 18px rgba(212, 163, 115,0.4)',
+        'ember-glow-lg': '0 8px 36px rgba(212, 163, 115,0.5)',
       },
     },
   },

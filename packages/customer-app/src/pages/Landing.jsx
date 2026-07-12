@@ -54,12 +54,12 @@ function RestaurantCard({ r, index }) {
                 src={r.logo_url}
                 alt=""
                 className="h-12 w-12 rounded-full object-cover"
-                style={{ boxShadow: '0 0 0 2px rgba(211,85,47,0.45), 0 6px 20px rgba(0,0,0,0.5)' }}
+                style={{ boxShadow: '0 0 0 2px rgba(212, 163, 115,0.45), 0 6px 20px rgba(0,0,0,0.5)' }}
               />
             ) : (
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-ember to-ember-mid text-lg font-black text-white"
-                style={{ boxShadow: '0 0 0 2px rgba(211,85,47,0.45), 0 6px 20px rgba(0,0,0,0.5)' }}
+                style={{ boxShadow: '0 0 0 2px rgba(212, 163, 115,0.45), 0 6px 20px rgba(0,0,0,0.5)' }}
               >
                 {r.name.charAt(0)}
               </div>
