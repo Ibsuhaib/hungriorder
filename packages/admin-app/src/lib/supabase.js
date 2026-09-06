@@ -12,8 +12,11 @@ if (!url || !anonKey) {
 // of mysterious failed requests to localhost.
 export const isConfigured = Boolean(url && anonKey);
 
+// Distinct storageKey per app. All three apps share one Supabase project, so
+// on the default key an admin session and a customer session would overwrite
+// each other if these were ever served from the same origin.
 export const supabase = createClient(url ?? 'http://localhost:54321', anonKey ?? 'anon', {
-  auth: { persistSession: true, autoRefreshToken: true },
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: 'hungriorder-admin-auth' },
 });
 
 export async function callFunction(name, body) {
