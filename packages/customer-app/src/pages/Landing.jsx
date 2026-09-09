@@ -362,7 +362,16 @@ export default function Landing() {
         </div>
 
         <div className="section-label mb-4 mt-2">
-          <span>{q ? `Results for "${query.trim()}"` : tab === 'dishes' ? 'Nearest dishes' : 'Restaurants near you'}</span>
+          {/* Without a location the list is sorted alphabetically, so calling it
+              "Nearest" told customers something untrue — the first results were
+              just the ones starting with "A". */}
+          <span>
+            {q
+              ? `Results for "${query.trim()}"`
+              : tab === 'dishes'
+                ? (userLoc ? 'Nearest dishes' : 'All dishes')
+                : (userLoc ? 'Restaurants near you' : 'All restaurants')}
+          </span>
         </div>
 
         {!isConfigured ? (
