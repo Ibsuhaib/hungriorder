@@ -7,6 +7,7 @@ import {
 import { supabase, isConfigured } from '../lib/supabase.js';
 import { rupees, isOpenNow } from '../lib/format.js';
 import { loadProfile, saveProfile, withDistance, formatKm, formatCoords } from '../lib/geo.js';
+import { onlyOrderable, onlyOrderableJoined } from '../lib/orderable.js';
 import EntryGate from '../components/EntryGate.jsx';
 import LocationSheet from '../components/LocationSheet.jsx';
 import { LocationMap } from '../components/ui/expand-map.jsx';
@@ -163,19 +164,18 @@ export default function Landing() {
     let cancelled = false;
     (async () => {
       const [rRes, dRes] = await Promise.all([
-        supabase
-          .from('restaurants')
-          .select('id, name, slug, logo_url, cover_image_url, description, cuisine_tags, address, opening_hours, delivery_radius_km, min_order_amount, delivery_fee, latitude, longitude')
-          .eq('is_active', true)
-          .eq('delivery_enabled', true)
-          .order('name'),
-        supabase
-          .from('menu_items')
-          .select('id, name, price, image_url, is_veg, description, restaurant_id, restaurants!inner(id, name, slug, latitude, longitude, delivery_radius_km, is_active, delivery_enabled)')
-          .eq('available', true)
-          .eq('online_available', true)
-          .eq('restaurants.is_active', true)
-          .eq('restaurants.delivery_enabled', true)
+        onlyOrderable(
+          supabase
+            .from('restaurants')
+            .select('id, name, slug, logo_url, cover_image_url, description, cuisine_tags, address, opening_hours, delivery_radius_km, min_order_amount, delivery_fee, latitude, longitude')
+        ).order('name'),
+        onlyOrderableJoined(
+          supabase
+            .from('menu_items')
+            .select('id, name, price, image_url, is_veg, description, restaurant_id, restaurants!inner(id, name, slug, latitude, longitude, delivery_radius_km, is_active, delivery_enabled, subscription_status, subscription_expiry)')
+            .eq('available', true)
+            .eq('online_available', true)
+        )
           .order('name')
           .limit(150),
       ]);

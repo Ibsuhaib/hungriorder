@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { rupees, isOpenNow } from '../lib/format.js';
 import { loadProfile } from '../lib/geo.js';
+import { onlyOrderable } from '../lib/orderable.js';
 import Spinner from '../components/Spinner.jsx';
 
 const PAYMENT_OPTIONS = [
@@ -42,12 +43,7 @@ export default function Checkout() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    supabase
-      .from('restaurants')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .eq('delivery_enabled', true)
+    onlyOrderable(supabase.from('restaurants').select('*').eq('slug', slug))
       .maybeSingle()
       .then(({ data, error }) => {
         // No row comes back when the restaurant is inactive, has online
