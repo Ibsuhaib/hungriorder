@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { rupees, isOpenNow } from '../lib/format.js';
 import { loadProfile } from '../lib/geo.js';
 import { onlyOrderable } from '../lib/orderable.js';
+import { addRecentOrder } from '../lib/recentOrders.js';
 import Spinner from '../components/Spinner.jsx';
 
 const PAYMENT_OPTIONS = [
@@ -124,6 +125,14 @@ export default function Checkout() {
         await supabase.from('customers').update({ addresses: next }).eq('id', session.user.id);
       }
       clear();
+      // Remember it on this device so the customer can find the order again
+      // after closing the tab — guests have no account to look it up under.
+      addRecentOrder({
+        orderId: result.order_id,
+        slug,
+        restaurantName: restaurant.name,
+        total,
+      });
       navigate(`/r/${slug}/success/${result.order_id}`, { replace: true });
     } catch (err) {
       setError(err.message);
