@@ -109,7 +109,7 @@ export default function OnlineOrderAlert({ restaurantId }) {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-[70] print:hidden">
+    <div className="fixed bottom-safe-4 right-4 z-[70] print:hidden">
       <AnimatePresence mode="wait">
         {collapsed ? (
           /* Collapsed: bell with unread badge — like a minimized chat */

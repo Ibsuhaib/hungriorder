@@ -137,7 +137,7 @@ export default function LocationPickerMap({ open, onClose, onSelect, initial = n
           <motion.div
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex max-h-[94vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border-t border-white/10 bg-ink-raised shadow-2xl"
+            className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex max-h-[94vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border-t border-white/10 bg-ink-raised shadow-2xl pb-safe"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 pb-2 pt-4">

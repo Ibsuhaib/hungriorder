@@ -388,7 +388,7 @@ export default function Restaurant() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={spring}
-            className="fixed inset-x-0 bottom-0 z-30 px-4 pb-5"
+            className="fixed inset-x-0 bottom-0 z-30 px-4 pb-safe-5"
           >
             <div className="mx-auto max-w-md">
               <motion.button type="button" onClick={() => setCartOpen(true)} whileTap={{ scale: 0.98 }} className="btn-ember-bar">
