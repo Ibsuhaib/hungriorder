@@ -88,7 +88,7 @@ export default function LocationSheet({ open, onClose, onSelect, initial = null 
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] w-full max-w-lg flex-col rounded-t-3xl border-t border-white/10 bg-ink-raised shadow-2xl"
+            className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] w-full max-w-lg flex-col rounded-t-3xl border-t border-white/10 bg-ink-raised shadow-2xl pb-safe"
           >
             <div className="flex items-center justify-between px-5 pb-3 pt-5">
               <h2 className="text-base font-bold text-white/90">Choose delivery location</h2>

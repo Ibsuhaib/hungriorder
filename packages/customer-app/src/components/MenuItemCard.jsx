@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, UtensilsCrossed } from 'lucide-react';
 import VegBadge from './VegBadge.jsx';
 import { rupees } from '../lib/format.js';
 
@@ -26,7 +26,12 @@ export default function MenuItemCard({ item, qty, onAdd, onSetQty, closed = fals
           {item.image_url ? (
             <img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-cover" />
           ) : (
-            <span className="text-2xl">🍽</span>
+            // Most dishes have no photo yet, so this fallback is what customers
+            // actually see most of the time — a bare emoji on a flat square read
+            // as a broken image rather than a deliberate empty state.
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-white/[0.07] to-transparent">
+              <UtensilsCrossed className="h-7 w-7 text-ember-light/30" strokeWidth={1.5} aria-hidden="true" />
+            </div>
           )}
         </div>
 

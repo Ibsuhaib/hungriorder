@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  UtensilsCrossed, Search, MapPin, Bike, ImageOff, Navigation, LocateFixed, Store,
+  UtensilsCrossed, Search, MapPin, Bike, ImageOff, Navigation, LocateFixed, Store, ReceiptText,
 } from 'lucide-react';
 import { supabase, isConfigured } from '../lib/supabase.js';
 import { rupees, isOpenNow } from '../lib/format.js';
 import { loadProfile, saveProfile, withDistance, formatKm, formatCoords } from '../lib/geo.js';
+import { onlyOrderable, onlyOrderableJoined } from '../lib/orderable.js';
+import { loadRecentOrders } from '../lib/recentOrders.js';
 import EntryGate from '../components/EntryGate.jsx';
 import LocationSheet from '../components/LocationSheet.jsx';
 import { LocationMap } from '../components/ui/expand-map.jsx';
@@ -134,6 +136,7 @@ export default function Landing() {
   const [restaurants, setRestaurants] = useState(null); // null = loading
   const [dishes, setDishes] = useState(null);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [hasOrders] = useState(() => loadRecentOrders().length > 0);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('dishes'); // dishes | restaurants
   const [locSheetOpen, setLocSheetOpen] = useState(false);
@@ -163,19 +166,18 @@ export default function Landing() {
     let cancelled = false;
     (async () => {
       const [rRes, dRes] = await Promise.all([
-        supabase
-          .from('restaurants')
-          .select('id, name, slug, logo_url, cover_image_url, description, cuisine_tags, address, opening_hours, delivery_radius_km, min_order_amount, delivery_fee, latitude, longitude')
-          .eq('is_active', true)
-          .eq('delivery_enabled', true)
-          .order('name'),
-        supabase
-          .from('menu_items')
-          .select('id, name, price, image_url, is_veg, description, restaurant_id, restaurants!inner(id, name, slug, latitude, longitude, delivery_radius_km, is_active, delivery_enabled)')
-          .eq('available', true)
-          .eq('online_available', true)
-          .eq('restaurants.is_active', true)
-          .eq('restaurants.delivery_enabled', true)
+        onlyOrderable(
+          supabase
+            .from('restaurants')
+            .select('id, name, slug, logo_url, cover_image_url, description, cuisine_tags, address, opening_hours, delivery_radius_km, min_order_amount, delivery_fee, latitude, longitude')
+        ).order('name'),
+        onlyOrderableJoined(
+          supabase
+            .from('menu_items')
+            .select('id, name, price, image_url, is_veg, description, restaurant_id, restaurants!inner(id, name, slug, latitude, longitude, delivery_radius_km, is_active, delivery_enabled, subscription_status, subscription_expiry)')
+            .eq('available', true)
+            .eq('online_available', true)
+        )
           .order('name')
           .limit(150),
       ]);
@@ -266,6 +268,20 @@ export default function Landing() {
             <LocateFixed className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{userLoc ? (userLoc.label || 'Located') : 'Set location'}</span>
           </button>
+
+          {/* Only shown once something was ordered on this device — otherwise
+              it leads to an empty page. This is the only route back to an
+              order after the tab is closed. */}
+          {hasOrders && (
+            <Link
+              to="/orders"
+              title="Your orders"
+              className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70"
+            >
+              <ReceiptText className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Orders</span>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -362,7 +378,16 @@ export default function Landing() {
         </div>
 
         <div className="section-label mb-4 mt-2">
-          <span>{q ? `Results for "${query.trim()}"` : tab === 'dishes' ? 'Nearest dishes' : 'Restaurants near you'}</span>
+          {/* Without a location the list is sorted alphabetically, so calling it
+              "Nearest" told customers something untrue — the first results were
+              just the ones starting with "A". */}
+          <span>
+            {q
+              ? `Results for "${query.trim()}"`
+              : tab === 'dishes'
+                ? (userLoc ? 'Nearest dishes' : 'All dishes')
+                : (userLoc ? 'Restaurants near you' : 'All restaurants')}
+          </span>
         </div>
 
         {!isConfigured ? (

@@ -27,7 +27,7 @@ export default function CartSheet({ open, onClose, restaurant }) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border-t border-white/10 bg-ink-raised p-5 pb-8 shadow-2xl"
+            className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border-t border-white/10 bg-ink-raised p-5 pb-safe-8 shadow-2xl"
           >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-lg font-bold text-white/90">

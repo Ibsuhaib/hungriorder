@@ -73,7 +73,8 @@ export default function Menu() {
   const deleteCategory = async (cat) => {
     const count = itemsByCategory.get(cat.id)?.length ?? 0;
     if (!window.confirm(`Delete "${cat.name}"${count ? ` and its ${count} item(s)` : ''}?`)) return;
-    await supabase.from('categories').delete().eq('id', cat.id);
+    const { error: deleteError } = await supabase.from('categories').delete().eq('id', cat.id);
+    if (deleteError) return setError('Could not delete the category.');
     load();
   };
 
@@ -127,13 +128,25 @@ export default function Menu() {
 
   const deleteItem = async (item) => {
     if (!window.confirm(`Delete "${item.name}"?`)) return;
-    await supabase.from('menu_items').delete().eq('id', item.id);
+    const { error: deleteError } = await supabase.from('menu_items').delete().eq('id', item.id);
+    if (deleteError) return setError(`Could not delete "${item.name}".`);
     load();
   };
 
   const toggleAvailability = async (item) => {
-    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, available: !i.available } : i)));
-    await supabase.from('menu_items').update({ available: !item.available }).eq('id', item.id);
+    const next = !item.available;
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, available: next } : i)));
+    const { error: updateError } = await supabase
+      .from('menu_items')
+      .update({ available: next })
+      .eq('id', item.id);
+    if (updateError) {
+      // Roll back. Leaving the optimistic flip in place would show the dish as
+      // sold out to staff while customers could still order it, because the
+      // database never changed.
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, available: item.available } : i)));
+      setError(`Could not update "${item.name}". Check your connection and try again.`);
+    }
   };
 
   if (categories === null) return <div className="flex justify-center pt-20"><Spinner /></div>;
@@ -149,6 +162,14 @@ export default function Menu() {
           <Plus className="h-4 w-4" /> Category
         </button>
       </div>
+
+      {/* Availability toggles and deletes happen on this page with no modal
+          open, so their failures need somewhere visible to surface. */}
+      {error && !catModal && !itemModal && (
+        <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </p>
+      )}
 
       {categories.length === 0 && (
         <p className="card mt-5 py-10 text-center text-sm text-slate-500">

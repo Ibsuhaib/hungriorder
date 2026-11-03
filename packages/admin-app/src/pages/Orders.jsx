@@ -17,16 +17,26 @@ export default function Orders() {
   const [orders, setOrders] = useState(null);
   const [tab, setTab] = useState('active');
   const [newOrderFlash, setNewOrderFlash] = useState(false);
+  const [stale, setStale] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     if (!restaurant) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('orders')
       .select('*, order_items(*)')
       .eq('restaurant_id', restaurant.id)
       .in('order_type', ['delivery', 'takeaway'])
       .order('created_at', { ascending: false })
       .limit(100);
+    // A failed fetch used to fall through to setOrders([]), which renders
+    // "No active orders right now." — telling kitchen staff there is nothing
+    // to cook when the request simply failed. Keep the last known list and say
+    // it may be out of date instead.
+    if (error) {
+      setStale(true);
+      return;
+    }
+    setStale(false);
     setOrders(data ?? []);
   }, [restaurant?.id]);
 
@@ -121,6 +131,12 @@ export default function Orders() {
           </button>
         ))}
       </div>
+
+      {stale && (
+        <p role="status" className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          Can&apos;t reach the server — this list may be out of date. Retrying automatically.
+        </p>
+      )}
 
       <div className="mt-4 space-y-4">
         {orders === null ? (

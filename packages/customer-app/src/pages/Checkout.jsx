@@ -7,6 +7,8 @@ import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { rupees, isOpenNow } from '../lib/format.js';
 import { loadProfile } from '../lib/geo.js';
+import { onlyOrderable } from '../lib/orderable.js';
+import { addRecentOrder } from '../lib/recentOrders.js';
 import Spinner from '../components/Spinner.jsx';
 
 const PAYMENT_OPTIONS = [
@@ -22,6 +24,7 @@ export default function Checkout() {
   const { customer, session } = useAuth();
 
   const [restaurant, setRestaurant] = useState(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [orderType, setOrderType] = useState('delivery');
   // Prefill from the entry-gate profile: the number entered on the landing
   // page, and the area/city/pincode of the chosen delivery location.
@@ -41,16 +44,18 @@ export default function Checkout() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    supabase
-      .from('restaurants')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .eq('delivery_enabled', true)
+    onlyOrderable(supabase.from('restaurants').select('*').eq('slug', slug))
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        // No row comes back when the restaurant is inactive, has online
+        // ordering switched off, or the slug is wrong. Without this the page
+        // sat on a spinner forever, on the checkout screen of all places.
+        if (error || !data) {
+          setLoadFailed(true);
+          return;
+        }
         setRestaurant(data);
-      });
+      }, () => setLoadFailed(true));
   }, [slug]);
 
   useEffect(() => {
@@ -70,6 +75,18 @@ export default function Checkout() {
       setAddress({ line1: a.line1 ?? '', line2: a.line2 ?? '', city: a.city ?? '', pincode: a.pincode ?? '' });
     }
   };
+
+  if (loadFailed) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
+        <h1 className="text-lg font-bold text-white">This restaurant isn&apos;t taking online orders</h1>
+        <p className="text-sm text-slate-400">
+          It may have closed online ordering, or the link may be out of date. Your cart has been kept.
+        </p>
+        <Link to="/" className="btn-ember px-6 py-2.5 text-sm">Browse restaurants</Link>
+      </div>
+    );
+  }
 
   if (!restaurant) return <Spinner full />;
 
@@ -108,6 +125,14 @@ export default function Checkout() {
         await supabase.from('customers').update({ addresses: next }).eq('id', session.user.id);
       }
       clear();
+      // Remember it on this device so the customer can find the order again
+      // after closing the tab — guests have no account to look it up under.
+      addRecentOrder({
+        orderId: result.order_id,
+        slug,
+        restaurantName: restaurant.name,
+        total,
+      });
       navigate(`/r/${slug}/success/${result.order_id}`, { replace: true });
     } catch (err) {
       setError(err.message);

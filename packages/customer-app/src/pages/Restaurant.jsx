@@ -5,6 +5,7 @@ import { ArrowLeft, ShoppingBag, Check, Search, X, UtensilsCrossed, Bike, MapPin
 import { supabase } from '../lib/supabase.js';
 import { useCart } from '../context/CartContext.jsx';
 import { rupees, hoursToday, isOpenNow } from '../lib/format.js';
+import { onlyOrderable } from '../lib/orderable.js';
 import MenuItemCard from '../components/MenuItemCard.jsx';
 import CartSheet from '../components/CartSheet.jsx';
 
@@ -63,13 +64,11 @@ export default function Restaurant() {
     let cancelled = false;
     (async () => {
       setState('loading');
-      const { data: r, error } = await supabase
-        .from('restaurants')
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_active', true)
-        .eq('delivery_enabled', true) // storefront is live only when online ordering is enabled
-        .maybeSingle();
+      // Mirrors place-online-order's checks, so a restaurant that can't accept
+      // an order can't be browsed into a full cart either.
+      const { data: r, error } = await onlyOrderable(
+        supabase.from('restaurants').select('*').eq('slug', slug)
+      ).maybeSingle();
       if (cancelled) return;
       if (error) return setState('error');
       if (!r) return setState('notfound');
@@ -389,7 +388,7 @@ export default function Restaurant() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={spring}
-            className="fixed inset-x-0 bottom-0 z-30 px-4 pb-5"
+            className="fixed inset-x-0 bottom-0 z-30 px-4 pb-safe-5"
           >
             <div className="mx-auto max-w-md">
               <motion.button type="button" onClick={() => setCartOpen(true)} whileTap={{ scale: 0.98 }} className="btn-ember-bar">

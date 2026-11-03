@@ -17,6 +17,7 @@ export default function Account() {
   const { replace } = useCart();
   const navigate = useNavigate();
   const [orders, setOrders] = useState(null);
+  const [ordersFailed, setOrdersFailed] = useState(false);
   const [name, setName] = useState('');
   const [savingName, setSavingName] = useState(false);
 
@@ -36,7 +37,17 @@ export default function Account() {
       .eq('customer_id', session.user.id)
       .order('created_at', { ascending: false })
       .limit(20)
-      .then(({ data }) => setOrders(data ?? []));
+      // A failed request used to land here as data === null and render
+      // "No orders yet", telling a customer their order history is empty when
+      // it simply hadn't loaded.
+      .then(({ data, error }) => {
+        setOrdersFailed(!!error);
+        setOrders(data ?? []);
+      })
+      .catch(() => {
+        setOrdersFailed(true);
+        setOrders([]);
+      });
   }, [session?.user?.id]);
 
   if (loading || !session) return <Spinner full />;
@@ -152,6 +163,8 @@ export default function Account() {
           </h2>
           {orders === null ? (
             <div className="flex justify-center py-6"><Spinner /></div>
+          ) : ordersFailed ? (
+            <p className="text-xs text-amber-400">Couldn&apos;t load your orders. Check your connection and refresh.</p>
           ) : orders.length === 0 ? (
             <p className="text-xs text-slate-500">No orders yet — your orders will show up here.</p>
           ) : (
